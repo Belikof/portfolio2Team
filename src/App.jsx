@@ -14,6 +14,7 @@ import { ContactFormWindow } from './components/windows/ContactFormWindow'
 import { GamesWindow } from './components/windows/GamesWindow'
 import { MinesweeperGame } from './components/windows/MinesweeperGame'
 import { SnakeGame } from './components/windows/SnakeGame'
+import { ProjectsWindow } from './components/windows/ProjectsWindow'
 
 
 function App() {
@@ -411,6 +412,7 @@ function App() {
               }
               initialSize={
                 id === 'contact' ? { width: 500, height: 220 } :
+                id === 'projects' ? { width: 700, height: 500 } :
                 id === 'minesweeper' ? { width: 300, height: 250 } :
                 id === 'snake' ? { width: 340, height: 370 } :
                 undefined
@@ -453,6 +455,8 @@ function App() {
                 <RecycleBinWindow />
               ) : id === 'contact' ? (
                 <ContactFormWindow />
+              ) : id === 'projects' ? (
+                <ProjectsWindow />
               ) : id === 'games' ? (
                 <GamesWindow 
                   onGameClick={(gameId) => {
