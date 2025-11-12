@@ -7,5 +7,8 @@ export const iconPaths = {
   dev: '/icons/dev.svg',
   recycleBin: '/icons/recycle-bin.svg',
   settings: '/icons/settings.svg',
+  games: '/icons/games.svg',
+  minesweeper: '/icons/minesweeper.svg',
+  snake: '/icons/snake.svg',
 }
 

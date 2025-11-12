@@ -1,0 +1,25 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="shape-rendering: crispEdges">
+  <!-- Основной корпус мины -->
+  <circle cx="16" cy="16" r="11" fill="#000000" stroke="#000000" stroke-width="1"/>
+  <circle cx="16" cy="16" r="9" fill="#404040"/>
+  <circle cx="16" cy="16" r="7" fill="#606060"/>
+  
+  <!-- Верхняя часть мины (блеск) -->
+  <ellipse cx="14" cy="12" rx="3" ry="4" fill="#808080"/>
+  <ellipse cx="14" cy="12" rx="2" ry="3" fill="#A0A0A0"/>
+  
+  <!-- Вертикальные шипы -->
+  <rect x="15" y="4" width="2" height="5" fill="#000000"/>
+  <rect x="15" y="23" width="2" height="5" fill="#000000"/>
+  
+  <!-- Горизонтальные шипы -->
+  <rect x="4" y="15" width="5" height="2" fill="#000000"/>
+  <rect x="23" y="15" width="5" height="2" fill="#000000"/>
+  
+  <!-- Диагональные шипы -->
+  <rect x="8" y="8" width="2" height="2" fill="#000000" transform="rotate(-45 9 9)"/>
+  <rect x="22" y="8" width="2" height="2" fill="#000000" transform="rotate(45 23 9)"/>
+  <rect x="8" y="22" width="2" height="2" fill="#000000" transform="rotate(45 9 23)"/>
+  <rect x="22" y="22" width="2" height="2" fill="#000000" transform="rotate(-45 23 23)"/>
+</svg>
+
