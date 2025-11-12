@@ -1,0 +1,22 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="shape-rendering: crispEdges; image-rendering: pixelated">
+  <!-- Фон -->
+  <rect width="16" height="16" fill="#C0C0C0"/>
+  
+  <!-- Рамка -->
+  <rect x="1" y="1" width="14" height="14" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+  
+  <!-- Панель управления - монитор с элементами -->
+  <rect x="3" y="3" width="10" height="8" fill="#C0C0C0" stroke="#000000" stroke-width="1"/>
+  
+  <!-- Экран монитора -->
+  <rect x="4" y="4" width="8" height="5" fill="#000080"/>
+  
+  <!-- Элементы на экране (иконки панели управления) -->
+  <rect x="5" y="5" width="2" height="2" fill="#FFFF00" stroke="#000000" stroke-width="0.5"/>
+  <rect x="8" y="5" width="2" height="2" fill="#FFFF00" stroke="#000000" stroke-width="0.5"/>
+  <rect x="11" y="5" width="1" height="1" fill="#FFFFFF"/>
+  
+  <!-- Подставка монитора -->
+  <rect x="6" y="11" width="4" height="1" fill="#C0C0C0" stroke="#000000" stroke-width="1"/>
+  <rect x="5" y="12" width="6" height="1" fill="#808080" stroke="#000000" stroke-width="1"/>
+</svg>

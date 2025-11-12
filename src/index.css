@@ -1,0 +1,332 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeSpeed !important;
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-smooth: never !important;
+  
+  --font-size: 9pt;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Пиксельный рендеринг для всех изображений - очень агрессивный */
+img {
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: pixelated !important;
+  image-rendering: -moz-crisp-edges !important;
+  image-rendering: crisp-edges !important;
+  -webkit-image-rendering: -webkit-optimize-contrast !important;
+  -webkit-image-rendering: pixelated !important;
+  -moz-image-rendering: crisp-edges !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
+  filter: contrast(2) brightness(1.2) saturate(1.4) !important;
+  imageRendering: '-webkit-optimize-contrast' !important;
+}
+
+/* Пиксельный рендеринг для SVG - очень агрессивный */
+svg {
+  shape-rendering: optimizeSpeed !important;
+  shape-rendering: crispEdges !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: pixelated !important;
+  -webkit-image-rendering: -webkit-optimize-contrast !important;
+  -webkit-image-rendering: pixelated !important;
+  filter: contrast(1.8) brightness(1.15) saturate(1.3) !important;
+}
+
+/* Пиксельный рендеринг для текста - очень агрессивный */
+*, *::before, *::after {
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeSpeed !important;
+  font-smooth: never !important;
+  image-rendering: pixelated !important;
+  -webkit-image-rendering: pixelated !important;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Скроллбары в стиле Windows 2000 */
+.window-content::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 17px !important;
+  height: 17px !important;
+  background: #D4D0C8 !important;
+}
+
+.window-content::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: #D4D0C8 !important;
+  border: 1px solid !important;
+  border-top-color: #FFFFFF !important;
+  border-left-color: #FFFFFF !important;
+  border-right-color: #808080 !important;
+  border-bottom-color: #808080 !important;
+}
+
+.window-content::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background: #C0C0C0 !important;
+  border: 1px solid !important;
+  border-top-color: #FFFFFF !important;
+  border-left-color: #FFFFFF !important;
+  border-right-color: #808080 !important;
+  border-bottom-color: #808080 !important;
+  min-height: 20px !important;
+  min-width: 20px !important;
+  box-shadow: inset 1px 1px 0px rgba(0,0,0,0.1) !important;
+}
+
+.window-content::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:hover {
+  background: #B0B0B0 !important;
+}
+
+.window-content::-webkit-scrollbar-thumb:active,
+::-webkit-scrollbar-thumb:active {
+  background: #808080 !important;
+  border-top-color: #808080 !important;
+  border-left-color: #808080 !important;
+  border-right-color: #FFFFFF !important;
+  border-bottom-color: #FFFFFF !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+.window-content::-webkit-scrollbar-button,
+::-webkit-scrollbar-button {
+  width: 17px !important;
+  height: 17px !important;
+  background: #D4D0C8 !important;
+  border: 1px solid !important;
+  border-top-color: #FFFFFF !important;
+  border-left-color: #FFFFFF !important;
+  border-right-color: #808080 !important;
+  border-bottom-color: #808080 !important;
+  display: block !important;
+}
+
+.window-content::-webkit-scrollbar-button:hover,
+::-webkit-scrollbar-button:hover {
+  background: #C0C0C0 !important;
+}
+
+.window-content::-webkit-scrollbar-button:active,
+::-webkit-scrollbar-button:active {
+  background: #808080 !important;
+  border-top-color: #808080 !important;
+  border-left-color: #808080 !important;
+  border-right-color: #FFFFFF !important;
+  border-bottom-color: #FFFFFF !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+.window-content::-webkit-scrollbar-button:vertical:start:decrement,
+::-webkit-scrollbar-button:vertical:start:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17' height='17' viewBox='0 0 17 17'%3E%3Cpath d='M8.5 5 L6 8 L11 8 Z' fill='%23000000'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 9px 9px !important;
+}
+
+.window-content::-webkit-scrollbar-button:vertical:end:increment,
+::-webkit-scrollbar-button:vertical:end:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17' height='17' viewBox='0 0 17 17'%3E%3Cpath d='M8.5 12 L6 9 L11 9 Z' fill='%23000000'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 9px 9px !important;
+}
+
+.window-content::-webkit-scrollbar-button:horizontal:start:decrement,
+::-webkit-scrollbar-button:horizontal:start:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17' height='17' viewBox='0 0 17 17'%3E%3Cpath d='M5 8.5 L8 6 L8 11 Z' fill='%23000000'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 9px 9px !important;
+}
+
+.window-content::-webkit-scrollbar-button:horizontal:end:increment,
+::-webkit-scrollbar-button:horizontal:end:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17' height='17' viewBox='0 0 17 17'%3E%3Cpath d='M12 8.5 L9 6 L9 11 Z' fill='%23000000'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 9px 9px !important;
+}
+
+.window-content::-webkit-scrollbar-corner,
+::-webkit-scrollbar-corner {
+  background: #D4D0C8 !important;
+  border: 1px solid !important;
+  border-top-color: #FFFFFF !important;
+  border-left-color: #FFFFFF !important;
+  border-right-color: #808080 !important;
+  border-bottom-color: #808080 !important;
+}
+
+/* Firefox scrollbar */
+.window-content,
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: #C0C0C0 #D4D0C8 !important;
+}
+
+/* Слайдер в стиле Windows 2000 */
+.win2000-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  height: 20px;
+  width: 100%;
+}
+
+.win2000-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 12px;
+  background: #C0C0C0 !important;
+  border: 1px solid !important;
+  border-top-color: #808080 !important;
+  border-left-color: #808080 !important;
+  border-right-color: #FFFFFF !important;
+  border-bottom-color: #FFFFFF !important;
+  box-shadow: inset 1px 1px 0px #424142 !important;
+  margin-top: 4px;
+}
+
+.win2000-slider::-webkit-slider-track {
+  width: 100%;
+  height: 12px;
+  background: #C0C0C0 !important;
+  border: 1px solid !important;
+  border-top-color: #808080 !important;
+  border-left-color: #808080 !important;
+  border-right-color: #FFFFFF !important;
+  border-bottom-color: #FFFFFF !important;
+  box-shadow: inset 1px 1px 0px #424142 !important;
+  margin-top: 4px;
+}
+
+.win2000-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 14px;
+  background: #C0C0C0;
+  border: 1px solid;
+  border-top-color: #FFFFFF;
+  border-left-color: #FFFFFF;
+  border-right-color: #424142;
+  border-bottom-color: #424142;
+  cursor: pointer;
+  margin-top: -1px;
+  box-shadow: inset -1px -1px 0px #808080, inset 1px 1px 0px #FFFFFF;
+  border-radius: 0;
+}
+
+.win2000-slider::-webkit-slider-thumb:hover {
+  background: #D4D0C8;
+}
+
+.win2000-slider::-webkit-slider-thumb:active {
+  background: #808080;
+  border-top-color: #424142;
+  border-left-color: #424142;
+  border-right-color: #FFFFFF;
+  border-bottom-color: #FFFFFF;
+  box-shadow: inset 1px 1px 0px #000000;
+}
+
+.win2000-slider::-moz-range-track {
+  width: 100%;
+  height: 12px;
+  background: #C0C0C0 !important;
+  border: 1px solid !important;
+  border-top-color: #808080 !important;
+  border-left-color: #808080 !important;
+  border-right-color: #FFFFFF !important;
+  border-bottom-color: #FFFFFF !important;
+  box-shadow: inset 1px 1px 0px #424142 !important;
+}
+
+.win2000-slider::-moz-range-thumb {
+  width: 24px;
+  height: 14px;
+  background: #C0C0C0;
+  border: 1px solid;
+  border-top-color: #FFFFFF;
+  border-left-color: #FFFFFF;
+  border-right-color: #424142;
+  border-bottom-color: #424142;
+  cursor: pointer;
+  border-radius: 0;
+  box-shadow: inset -1px -1px 0px #808080, inset 1px 1px 0px #FFFFFF;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
