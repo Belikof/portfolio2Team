@@ -58,6 +58,11 @@ img {
   imageRendering: '-webkit-optimize-contrast' !important;
 }
 
+/* Исключение для фото команды - без фильтров */
+img.team-photo {
+  filter: none !important;
+}
+
 /* Пиксельный рендеринг для SVG - очень агрессивный */
 svg {
   shape-rendering: optimizeSpeed !important;

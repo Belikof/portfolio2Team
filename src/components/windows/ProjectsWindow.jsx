@@ -60,6 +60,14 @@ export function ProjectsWindow() {
       image: '/web-app.jpeg',
       technologies: ['React', 'Vue.js', 'TypeScript', 'Node.js', 'MongoDB'],
     },
+    {
+      id: 8,
+      title: 'Тестирование ПО',
+      type: 'testing',
+      description: 'Комплексное тестирование программного обеспечения: функциональное, юзабилити. Автоматизация тестирования, написание тест-кейсов, регрессионное тестирование. Обеспечение качества перед релизом. Подробный отчет и локализация дефектов.',
+      image: '/testing.jpeg',
+      technologies: ['Selenium', 'Android Studio', 'Charles', 'Postman', 'DevTools', 'SQL'],
+    },
   ]
 
   const getTypeLabel = (type) => {
@@ -72,6 +80,8 @@ export function ProjectsWindow() {
         return 'CRM'
       case 'web-app':
         return 'Web приложение'
+      case 'testing':
+        return 'Тестирование'
       default:
         return 'Услуга'
     }
@@ -87,6 +97,8 @@ export function ProjectsWindow() {
         return 'Примеры CRM'
       case 'web-app':
         return 'Примеры приложений'
+      case 'testing':
+        return 'Примеры тестирования'
       default:
         return 'Подробнее'
     }
