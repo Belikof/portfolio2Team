@@ -25,6 +25,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
     { icon: '/icons/projects.svg', label: 'Наши проекты', id: 'projects' },
     { icon: '/icons/contact.svg', label: 'Записаться на созвон', id: 'contact' },
     { icon: '/icons/dev.svg', label: 'В разработке', id: 'dev' },
+    { icon: '/icons/games.svg', label: 'Игры', id: 'games' },
     { icon: '/icons/settings.svg', label: 'Настройки', id: 'settings', hasArrow: true },
   ]
 
@@ -112,7 +113,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
               e.currentTarget.style.color = '#000000'
             }}
             onClick={() => {
-              if (onMenuItemClick && (item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'settings')) {
+              if (onMenuItemClick && (item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
                 onMenuItemClick(item.id)
               } else {
                 console.log(`Clicked: ${item.label}`)
@@ -177,7 +178,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
               e.currentTarget.style.color = '#000000'
             }}
             onClick={() => {
-              if (onMenuItemClick && (item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'settings')) {
+              if (onMenuItemClick && (item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
                 onMenuItemClick(item.id)
               } else {
                 console.log(`Clicked: ${item.label}`)

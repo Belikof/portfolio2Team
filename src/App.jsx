@@ -1,5 +1,5 @@
 import './index.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { addScrollbarStyles } from './utils/scrollbarStyles'
 import { iconPaths } from './constants/iconPaths'
 import { DesktopIcon } from './components/DesktopIcon'
@@ -11,6 +11,9 @@ import { DisplaySettingsContent } from './components/settings/DisplaySettingsCon
 import { SoundsSettingsContent } from './components/settings/SoundsSettingsContent'
 import { RecycleBinWindow } from './components/windows/RecycleBinWindow'
 import { ContactFormWindow } from './components/windows/ContactFormWindow'
+import { GamesWindow } from './components/windows/GamesWindow'
+import { MinesweeperGame } from './components/windows/MinesweeperGame'
+import { SnakeGame } from './components/windows/SnakeGame'
 
 
 function App() {
@@ -71,7 +74,8 @@ function App() {
     projects: { x: 20, y: 100 },
     contact: { x: 20, y: 180 },
     dev: { x: 20, y: 260 },
-    recycleBin: { x: 20, y: 340 },
+    games: { x: 20, y: 340 },
+    recycleBin: { x: 20, y: 420 },
   }
 
   const [iconPositions, setIconPositions] = useState(() => {
@@ -95,6 +99,49 @@ function App() {
   const [windows, setWindows] = useState({})
   const [windowPositions, setWindowPositions] = useState({})
   const [windowZIndexes, setWindowZIndexes] = useState({})
+  const windowRefs = useRef({})
+
+  // Callback для регистрации функции обновления размера окна minesweeper
+  const handleMinesweeperSizeChangeRequest = useCallback((updateSizeFn) => {
+    if (updateSizeFn) {
+      windowRefs.current['minesweeper'] = { updateSize: updateSizeFn }
+    } else {
+      delete windowRefs.current['minesweeper']
+    }
+  }, [])
+
+  // Callback для обновления размера окна minesweeper
+  const handleMinesweeperSizeChange = useCallback((newSize) => {
+    const windowRef = windowRefs.current['minesweeper']
+    if (windowRef && windowRef.updateSize && newSize && newSize.width && newSize.height) {
+      try {
+        windowRef.updateSize(newSize)
+      } catch (error) {
+        console.error('Error updating minesweeper window size:', error)
+      }
+    }
+  }, [])
+
+  // Callback для регистрации функции обновления размера окна snake
+  const handleSnakeSizeChangeRequest = useCallback((updateSizeFn) => {
+    if (updateSizeFn) {
+      windowRefs.current['snake'] = { updateSize: updateSizeFn }
+    } else {
+      delete windowRefs.current['snake']
+    }
+  }, [])
+
+  // Callback для обновления размера окна snake
+  const handleSnakeSizeChange = useCallback((newSize) => {
+    const windowRef = windowRefs.current['snake']
+    if (windowRef && windowRef.updateSize && newSize && newSize.width && newSize.height) {
+      try {
+        windowRef.updateSize(newSize)
+      } catch (error) {
+        console.error('Error updating snake window size:', error)
+      }
+    }
+  }, [])
 
   // Создаем иконки для окон настроек
   const displayIcon = 'data:image/svg+xml,' + encodeURIComponent(`
@@ -135,6 +182,9 @@ function App() {
     projects: { title: 'Наши проекты', icon: iconPaths.projects },
     contact: { title: 'Записаться на созвон', icon: iconPaths.contact },
     dev: { title: 'В разработке', icon: iconPaths.dev },
+    games: { title: 'Игры', icon: iconPaths.games },
+    minesweeper: { title: 'Сапёр', icon: iconPaths.minesweeper },
+    snake: { title: 'Змейка', icon: iconPaths.snake },
     recycleBin: { title: 'Корзина', icon: iconPaths.recycleBin },
     settings: { title: 'Настройки', icon: iconPaths.settings },
     displaySettings: { title: 'Свойства: Экран', icon: displayIcon },
@@ -247,6 +297,7 @@ function App() {
     }))
   }
 
+
   const handleIconClick = (id) => {
     if (windows[id]?.isOpen) {
       if (windows[id].isMinimized) {
@@ -263,6 +314,7 @@ function App() {
     { iconType: 'projects', label: 'Наши проекты', id: 'projects', iconSrc: iconPaths.projects },
     { iconType: 'contact', label: 'Записаться на созвон', id: 'contact', iconSrc: iconPaths.contact },
     { iconType: 'dev', label: 'В разработке', id: 'dev', iconSrc: iconPaths.dev },
+    { iconType: 'games', label: 'Игры', id: 'games', iconSrc: iconPaths.games },
     { iconType: 'recycleBin', label: 'Корзина', id: 'recycleBin', iconSrc: iconPaths.recycleBin },
   ]
 
@@ -352,7 +404,17 @@ function App() {
               onMaximize={maximizeWindow}
               onPositionChange={updateWindowPosition}
               onFocus={focusWindow}
-              initialSize={id === 'contact' ? { width: 500, height: 220 } : undefined}
+              onSizeChangeRequest={
+                id === 'minesweeper' ? handleMinesweeperSizeChangeRequest :
+                id === 'snake' ? handleSnakeSizeChangeRequest :
+                undefined
+              }
+              initialSize={
+                id === 'contact' ? { width: 500, height: 220 } :
+                id === 'minesweeper' ? { width: 300, height: 250 } :
+                id === 'snake' ? { width: 340, height: 370 } :
+                undefined
+              }
             >
               {id === 'settings' ? (
                 <SettingsWindow 
@@ -391,6 +453,26 @@ function App() {
                 <RecycleBinWindow />
               ) : id === 'contact' ? (
                 <ContactFormWindow />
+              ) : id === 'games' ? (
+                <GamesWindow 
+                  onGameClick={(gameId) => {
+                    if (gameId === 'minesweeper') {
+                      openWindow('minesweeper')
+                      setTimeout(() => focusWindow('minesweeper'), 0)
+                    } else if (gameId === 'snake') {
+                      openWindow('snake')
+                      setTimeout(() => focusWindow('snake'), 0)
+                    }
+                  }}
+                />
+              ) : id === 'minesweeper' ? (
+                <MinesweeperGame 
+                  onSizeChange={handleMinesweeperSizeChange}
+                />
+              ) : id === 'snake' ? (
+                <SnakeGame 
+                  onSizeChange={handleSnakeSizeChange}
+                />
               ) : (
                 <div style={{ 
                   color: '#000000', 

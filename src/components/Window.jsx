@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
-export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximize, isMinimized, isMaximized, position, onPositionChange, onFocus, zIndex, children, initialSize }) {
+export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximize, isMinimized, isMaximized, position, onPositionChange, onFocus, zIndex, children, initialSize, onSizeChangeRequest }) {
   const windowRef = useRef(null)
   const titleBarRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -12,6 +12,25 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
   const savedPositionRef = useRef({ x: 100, y: 100 })
   const [isClosing, setIsClosing] = useState(false)
   const [isOpening, setIsOpening] = useState(false)
+
+  const updateWindowSize = useCallback((newSize) => {
+    if (!isMaximized && newSize && newSize.width && newSize.height) {
+      // Обновляем только если размер действительно изменился
+      setSize(prevSize => {
+        if (prevSize.width === newSize.width && prevSize.height === newSize.height) {
+          return prevSize
+        }
+        return newSize
+      })
+    }
+  }, [isMaximized])
+
+  // Предоставляем функцию обновления размера через callback
+  useEffect(() => {
+    if (onSizeChangeRequest) {
+      onSizeChangeRequest(updateWindowSize)
+    }
+  }, [onSizeChangeRequest, updateWindowSize])
 
   const handleTitleBarMouseDown = (e) => {
     if (e.button !== 0 || isMaximized) return
@@ -384,9 +403,9 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
       <div
         className="window-content"
         style={{
-          flex: 1,
+          flex: (id === 'minesweeper' || id === 'snake') ? '0 0 auto' : 1,
           background: '#ECE9D8',
-          overflow: 'auto',
+          overflow: (id === 'minesweeper' || id === 'snake') ? 'hidden' : 'auto',
           padding: '0',
           border: '1px solid',
           borderTopColor: '#808080',
