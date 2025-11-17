@@ -105,3 +105,6 @@ export function IconSVG({ type, customIcon, iconSize = 32 }) {
   return icons[type] || icons.about
 }
 
+
+
+

@@ -10,5 +10,6 @@ export const iconPaths = {
   games: '/icons/games.svg',
   minesweeper: '/icons/minesweeper.svg',
   snake: '/icons/snake.svg',
+  search: '/icons/search.svg',
 }
 

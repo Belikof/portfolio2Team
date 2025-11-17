@@ -21,6 +21,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
   if (!isOpen) return null
 
   const menuItems = [
+    { icon: '/icons/search.svg', label: 'Поиск', id: 'search' },
     { icon: '/icons/about.svg', label: 'О нас', id: 'about' },
     { icon: '/icons/projects.svg', label: 'Наши проекты', id: 'projects' },
     { icon: '/icons/contact.svg', label: 'Записаться на созвон', id: 'contact' },
@@ -67,8 +68,8 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
         <div
           style={{
             color: '#FFFFFF',
-            fontSize: 'var(--font-size, 8pt)',
-            fontWeight: 'normal',
+            fontSize: 'var(--font-size, 12pt)',
+            fontWeight: 'bold',
             textRendering: 'optimizeSpeed',
             WebkitFontSmoothing: 'none',
             MozOsxFontSmoothing: 'grayscale',
@@ -77,9 +78,10 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
             transformOrigin: 'center',
             whiteSpace: 'nowrap',
             fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
           }}
         >
-          Молодая веб-студия
+          2Team
         </div>
       </div>
 
@@ -113,7 +115,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
               e.currentTarget.style.color = '#000000'
             }}
             onClick={() => {
-              if (onMenuItemClick && (item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
+              if (onMenuItemClick && (item.id === 'search' || item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
                 onMenuItemClick(item.id)
               } else {
                 console.log(`Clicked: ${item.label}`)
@@ -178,7 +180,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
               e.currentTarget.style.color = '#000000'
             }}
             onClick={() => {
-              if (onMenuItemClick && (item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
+              if (onMenuItemClick && (item.id === 'search' || item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
                 onMenuItemClick(item.id)
               } else {
                 console.log(`Clicked: ${item.label}`)

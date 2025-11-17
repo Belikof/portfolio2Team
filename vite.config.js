@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0', // доступ по сети
-    port: 5173
+    port: 5173,
+    allowedHosts: [
+      '.trycloudflare.com'
+    ]
   }
 })

@@ -16,6 +16,7 @@ import { MinesweeperGame } from './components/windows/MinesweeperGame'
 import { SnakeGame } from './components/windows/SnakeGame'
 import { ProjectsWindow } from './components/windows/ProjectsWindow'
 import { AboutWindow } from './components/windows/AboutWindow'
+import { SearchWindow } from './components/windows/SearchWindow'
 
 
 function App() {
@@ -180,6 +181,7 @@ function App() {
   `)
 
   const windowConfigs = {
+    search: { title: 'Поиск', icon: iconPaths.search },
     about: { title: 'О нас', icon: iconPaths.about },
     projects: { title: 'Наши проекты', icon: iconPaths.projects },
     contact: { title: 'Записаться на созвон', icon: iconPaths.contact },
@@ -412,6 +414,7 @@ function App() {
                 undefined
               }
               initialSize={
+                id === 'search' ? { width: 600, height: 500 } :
                 id === 'contact' ? { width: 500, height: 220 } :
                 id === 'projects' ? { width: 700, height: 500 } :
                 id === 'about' ? { width: 600, height: 700 } :
@@ -480,6 +483,13 @@ function App() {
               ) : id === 'snake' ? (
                 <SnakeGame 
                   onSizeChange={handleSnakeSizeChange}
+                />
+              ) : id === 'search' ? (
+                <SearchWindow 
+                  onOpenWindow={(windowId) => {
+                    openWindow(windowId)
+                    setTimeout(() => focusWindow(windowId), 0)
+                  }}
                 />
               ) : (
                 <div style={{ 
