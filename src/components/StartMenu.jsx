@@ -5,15 +5,19 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      const startButton = document.getElementById('start-button')
+      if (menuRef.current && !menuRef.current.contains(event.target) && 
+          event.target !== startButton && !startButton?.contains(event.target)) {
         onClose()
       }
     }
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('touchstart', handleClickOutside)
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
+        document.removeEventListener('touchstart', handleClickOutside)
       }
     }
   }, [isOpen, onClose])
@@ -27,6 +31,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
     { icon: '/icons/contact.svg', label: 'Записаться на созвон', id: 'contact' },
     { icon: '/icons/dev.svg', label: 'В разработке', id: 'dev' },
     { icon: '/icons/games.svg', label: 'Игры', id: 'games' },
+    { icon: '/winapp-icon.png', label: 'Winamp', id: 'winamp' },
     { icon: '/icons/settings.svg', label: 'Настройки', id: 'settings', hasArrow: true },
   ]
 
@@ -35,12 +40,14 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
     { icon: '/icons/shutdown.svg', label: 'Shut Down...', id: 'shutdown' },
   ]
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+
   return (
     <div
       ref={menuRef}
       className="absolute flex"
       style={{
-        bottom: '30px',
+        bottom: isMobile ? '40px' : '30px',
         left: '0',
         background: '#C0C0C0',
         border: '1px solid',
@@ -50,7 +57,8 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
         borderBottomColor: '#424142',
         boxShadow: '2px 2px 0px rgba(0,0,0,0.1)',
         zIndex: 10000,
-        minWidth: '250px',
+        minWidth: isMobile ? '200px' : '250px',
+        maxWidth: isMobile ? '90vw' : 'none',
       }}
     >
       {/* Левая панель с текстом */}
@@ -68,7 +76,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
         <div
           style={{
             color: '#FFFFFF',
-            fontSize: 'var(--font-size, 12pt)',
+            fontSize: typeof window !== 'undefined' && window.innerWidth <= 768 ? '16pt' : '18pt',
             fontWeight: 'bold',
             textRendering: 'optimizeSpeed',
             WebkitFontSmoothing: 'none',
@@ -93,8 +101,8 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
             key={item.id}
             className="flex items-center cursor-pointer"
             style={{
-              height: '22px',
-              fontSize: 'var(--font-size, 8pt)',
+              height: typeof window !== 'undefined' && window.innerWidth <= 768 ? '32px' : '22px',
+              fontSize: typeof window !== 'undefined' && window.innerWidth <= 768 ? '10pt' : 'var(--font-size, 8pt)',
               fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
               color: '#000000',
               textRendering: 'optimizeSpeed',
@@ -115,7 +123,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
               e.currentTarget.style.color = '#000000'
             }}
             onClick={() => {
-              if (onMenuItemClick && (item.id === 'search' || item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
+              if (onMenuItemClick) {
                 onMenuItemClick(item.id)
               } else {
                 console.log(`Clicked: ${item.label}`)
@@ -158,8 +166,8 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
             key={item.id}
             className="flex items-center cursor-pointer"
             style={{
-              height: '22px',
-              fontSize: 'var(--font-size, 8pt)',
+              height: typeof window !== 'undefined' && window.innerWidth <= 768 ? '32px' : '22px',
+              fontSize: typeof window !== 'undefined' && window.innerWidth <= 768 ? '10pt' : 'var(--font-size, 8pt)',
               fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
               color: '#000000',
               textRendering: 'optimizeSpeed',
@@ -180,7 +188,7 @@ export function StartMenu({ isOpen, onClose, onMenuItemClick }) {
               e.currentTarget.style.color = '#000000'
             }}
             onClick={() => {
-              if (onMenuItemClick && (item.id === 'search' || item.id === 'about' || item.id === 'projects' || item.id === 'contact' || item.id === 'dev' || item.id === 'games' || item.id === 'settings')) {
+              if (onMenuItemClick) {
                 onMenuItemClick(item.id)
               } else {
                 console.log(`Clicked: ${item.label}`)

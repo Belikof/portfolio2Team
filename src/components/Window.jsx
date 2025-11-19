@@ -7,7 +7,16 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
   const dragOffsetRef = useRef({ x: 0, y: 0 })
   const wasDraggingRef = useRef(false)
   const defaultSize = initialSize || { width: 600, height: 400 }
-  const [size, setSize] = useState(defaultSize)
+  const [size, setSize] = useState(() => {
+    // При инициализации проверяем, мобильное ли устройство
+    if (typeof window !== 'undefined' && window.innerWidth <= 768 && initialSize) {
+      return {
+        width: Math.min(window.innerWidth - 20, initialSize.width),
+        height: Math.min(window.innerHeight - 50, initialSize.height)
+      }
+    }
+    return defaultSize
+  })
   const savedSizeRef = useRef(defaultSize)
   const savedPositionRef = useRef({ x: 100, y: 100 })
   const [isClosing, setIsClosing] = useState(false)
@@ -32,13 +41,22 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
     }
   }, [onSizeChangeRequest, updateWindowSize])
 
+  const getClientCoords = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    }
+    return { x: e.clientX, y: e.clientY }
+  }
+
   const handleTitleBarMouseDown = (e) => {
-    if (e.button !== 0 || isMaximized) return
+    if (isMaximized) return
+    if (e.type === 'mousedown' && e.button !== 0) return
     
+    const coords = getClientCoords(e)
     const rect = windowRef.current.getBoundingClientRect()
     dragOffsetRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: coords.x - rect.left,
+      y: coords.y - rect.top
     }
     setIsDragging(true)
     wasDraggingRef.current = false
@@ -48,9 +66,10 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
   useEffect(() => {
     if (!isDragging || isMaximized) return
 
-    const handleMouseMove = (e) => {
-      const newX = e.clientX - dragOffsetRef.current.x
-      const newY = e.clientY - dragOffsetRef.current.y
+    const handleMove = (e) => {
+      const coords = getClientCoords(e)
+      const newX = coords.x - dragOffsetRef.current.x
+      const newY = coords.y - dragOffsetRef.current.y
       
       const maxX = window.innerWidth - 50
       const maxY = window.innerHeight - 100
@@ -62,16 +81,20 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
       wasDraggingRef.current = true
     }
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       setIsDragging(false)
     }
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('mousemove', handleMove)
+    document.addEventListener('mouseup', handleEnd)
+    document.addEventListener('touchmove', handleMove, { passive: false })
+    document.addEventListener('touchend', handleEnd)
     
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mousemove', handleMove)
+      document.removeEventListener('mouseup', handleEnd)
+      document.removeEventListener('touchmove', handleMove)
+      document.removeEventListener('touchend', handleEnd)
     }
   }, [isDragging, id, onPositionChange, isMaximized])
 
@@ -83,11 +106,58 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
     } else {
       savedSizeRef.current = size
       savedPositionRef.current = position
-      setSize({ width: window.innerWidth, height: window.innerHeight - 36 })
+      const isMobile = window.innerWidth <= 768
+      setSize({ 
+        width: window.innerWidth, 
+        height: isMobile ? window.innerHeight - 30 : window.innerHeight - 36 
+      })
       onPositionChange(id, { x: 0, y: 0 })
       onMaximize(id, true)
     }
   }
+
+  // Обновление размера при открытии окна или изменении initialSize
+  useEffect(() => {
+    if (isOpen && initialSize && !isMaximized) {
+      const isMobile = window.innerWidth <= 768
+      if (isMobile) {
+        const mobileSize = {
+          width: Math.min(window.innerWidth - 20, initialSize.width),
+          height: Math.min(window.innerHeight - 50, initialSize.height)
+        }
+        setSize(prevSize => {
+          if (prevSize.width !== mobileSize.width || prevSize.height !== mobileSize.height) {
+            return mobileSize
+          }
+          return prevSize
+        })
+      } else {
+        setSize(prevSize => {
+          if (prevSize.width !== initialSize.width || prevSize.height !== initialSize.height) {
+            return initialSize
+          }
+          return prevSize
+        })
+      }
+    }
+  }, [initialSize, isMaximized, isOpen])
+
+  // Адаптивный размер при открытии окна
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768
+    if (isOpen && !isMaximized && isMobile) {
+      const mobileSize = {
+        width: Math.min(window.innerWidth - 20, defaultSize.width),
+        height: Math.min(window.innerHeight - 50, defaultSize.height)
+      }
+      setSize(prevSize => {
+        if (prevSize.width !== mobileSize.width || prevSize.height !== mobileSize.height) {
+          return mobileSize
+        }
+        return prevSize
+      })
+    }
+  }, [isOpen, isMaximized, defaultSize.width, defaultSize.height])
 
   // Анимация открытия
   useEffect(() => {
@@ -119,12 +189,15 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
 
   if (!isOpen && !isClosing) return null
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
   const windowStyle = {
     position: 'absolute',
     left: isMaximized ? 0 : `${position.x}px`,
     top: isMaximized ? 0 : `${position.y}px`,
-    width: isMaximized ? '100%' : `${size.width}px`,
-    height: isMaximized ? 'calc(100% - 30px)' : `${size.height}px`,
+    width: isMaximized ? '100%' : (isMobile && !isMaximized ? `${Math.min(size.width, window.innerWidth - 20)}px` : `${size.width}px`),
+    height: isMaximized ? (isMobile ? 'calc(100% - 30px)' : 'calc(100% - 36px)') : `${size.height}px`,
+    maxWidth: isMobile && !isMaximized ? 'calc(100vw - 20px)' : 'none',
+    maxHeight: isMobile && !isMaximized ? 'calc(100vh - 50px)' : 'none',
     display: isMinimized ? 'none' : 'flex',
     flexDirection: 'column',
     background: '#ECE9D8',
@@ -162,8 +235,9 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
       <div
         ref={titleBarRef}
         onMouseDown={handleTitleBarMouseDown}
+        onTouchStart={handleTitleBarMouseDown}
         style={{
-          height: '18px',
+          height: isMobile ? '32px' : '22px',
           background: 'linear-gradient(to bottom, #0A246A 0%, #A6CAF0 50%, #0A246A 100%)',
           display: 'flex',
           alignItems: 'center',
@@ -172,6 +246,7 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
           cursor: isMaximized ? 'default' : 'move',
           userSelect: 'none',
           borderBottom: '1px solid #424142',
+          touchAction: 'none',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1, minWidth: 0, paddingLeft: '3px' }}>
@@ -201,7 +276,7 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
               MozOsxFontSmoothing: 'grayscale',
               fontSmooth: 'never',
               fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
-              lineHeight: '18px',
+              lineHeight: isMobile ? '32px' : '22px',
             }}
           >
             {title}
@@ -215,8 +290,8 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
               onMinimize(id, !isMinimized)
             }}
             style={{
-              width: '18px',
-              height: '16px',
+              width: isMobile ? '28px' : '18px',
+              height: isMobile ? '26px' : '16px',
               background: '#C0C0C0',
               border: '1px solid',
               borderTopColor: '#FFFFFF',
@@ -254,10 +329,9 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
           >
             <span style={{ 
               color: '#000000', 
-              fontSize: 'var(--font-size, 9pt)', 
+              fontSize: isMobile ? '14pt' : 'var(--font-size, 9pt)', 
               lineHeight: '1',
               fontFamily: 'Tahoma, sans-serif',
-              marginTop: '-2px',
             }}>_</span>
           </button>
           {/* Maximize/Restore Button */}
@@ -267,8 +341,8 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
               handleMaximize()
             }}
             style={{
-              width: '18px',
-              height: '16px',
+              width: isMobile ? '28px' : '18px',
+              height: isMobile ? '26px' : '16px',
               background: '#C0C0C0',
               border: '1px solid',
               borderTopColor: '#FFFFFF',
@@ -306,8 +380,8 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
           >
             {isMaximized ? (
               <div style={{ 
-                width: '10px', 
-                height: '10px', 
+                width: isMobile ? '16px' : '10px', 
+                height: isMobile ? '16px' : '10px', 
                 border: '1px solid #000', 
                 background: '#C0C0C0',
                 position: 'relative',
@@ -316,26 +390,26 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
                   position: 'absolute',
                   top: '1px',
                   left: '1px',
-                  width: '6px',
-                  height: '6px',
+                  width: isMobile ? '10px' : '6px',
+                  height: isMobile ? '10px' : '6px',
                   border: '1px solid #000',
                   background: '#FFFFFF',
                 }} />
               </div>
             ) : (
               <div style={{ 
-                width: '10px', 
-                height: '10px', 
+                width: isMobile ? '16px' : '10px', 
+                height: isMobile ? '16px' : '10px', 
                 border: '1px solid #000', 
                 background: '#C0C0C0', 
                 position: 'relative' 
               }}>
                 <div style={{ 
                   position: 'absolute', 
-                  top: '-2px', 
-                  left: '-2px', 
-                  width: '8px', 
-                  height: '8px', 
+                  top: isMobile ? '-3px' : '-2px', 
+                  left: isMobile ? '-3px' : '-2px', 
+                  width: isMobile ? '12px' : '8px', 
+                  height: isMobile ? '12px' : '8px', 
                   border: '1px solid #000', 
                   background: '#FFFFFF' 
                 }} />
@@ -349,8 +423,8 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
               handleClose()
             }}
             style={{
-              width: '18px',
-              height: '16px',
+              width: isMobile ? '28px' : '18px',
+              height: isMobile ? '26px' : '16px',
               background: '#C0C0C0',
               border: '1px solid',
               borderTopColor: '#FFFFFF',
@@ -390,7 +464,7 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
           >
             <span style={{ 
               color: 'inherit', 
-              fontSize: 'var(--font-size, 9pt)', 
+              fontSize: isMobile ? '16pt' : 'var(--font-size, 9pt)', 
               lineHeight: '1',
               fontFamily: 'Tahoma, sans-serif',
               fontWeight: 'bold',
@@ -403,9 +477,11 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
       <div
         className="window-content"
         style={{
-          flex: (id === 'minesweeper' || id === 'snake') ? '0 0 auto' : 1,
+          flex: (id === 'minesweeper' || id === 'snake') ? 1 : 1,
           background: '#ECE9D8',
-          overflow: (id === 'minesweeper' || id === 'snake') ? 'hidden' : 'auto',
+          overflow: (id === 'minesweeper' || id === 'snake') 
+            ? (isMobile ? 'auto' : 'hidden') 
+            : 'auto',
           padding: '0',
           border: '1px solid',
           borderTopColor: '#808080',
@@ -413,6 +489,10 @@ export function Window({ id, title, icon, isOpen, onClose, onMinimize, onMaximiz
           borderRightColor: '#FFFFFF',
           borderBottomColor: '#FFFFFF',
           boxShadow: 'inset 1px 1px 0px #424142',
+          display: (id === 'minesweeper' || id === 'snake') ? 'flex' : 'block',
+          justifyContent: (id === 'minesweeper' || id === 'snake') ? 'center' : 'flex-start',
+          alignItems: (id === 'minesweeper' || id === 'snake') ? (isMobile ? 'flex-start' : 'center') : 'flex-start',
+          minHeight: 0,
         }}
         onClick={() => onFocus(id)}
       >

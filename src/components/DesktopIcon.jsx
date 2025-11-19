@@ -1,22 +1,30 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 import { IconSVG } from './IconSVG'
 
-export function DesktopIcon({ iconType, label, onClick, iconSrc, position, onPositionChange, id, iconSize = 32 }) {
+export const DesktopIcon = memo(function DesktopIcon({ iconType, label, onClick, iconSrc, position, onPositionChange, id, iconSize = 32 }) {
   const [isHovered, setIsHovered] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const dragOffsetRef = useRef({ x: 0, y: 0 })
   const iconRef = useRef(null)
   const wasDraggingRef = useRef(false)
 
+  const getClientCoords = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    }
+    return { x: e.clientX, y: e.clientY }
+  }
+
   const handleMouseDown = (e) => {
-    if (e.button !== 0) return // Только левая кнопка мыши
+    if (e.type === 'mousedown' && e.button !== 0) return
     
+    const coords = getClientCoords(e)
     const rect = iconRef.current.getBoundingClientRect()
     const desktopRect = iconRef.current.parentElement.getBoundingClientRect()
     
     dragOffsetRef.current = {
-      x: e.clientX - rect.left - desktopRect.left,
-      y: e.clientY - rect.top - desktopRect.top
+      x: coords.x - rect.left - desktopRect.left,
+      y: coords.y - rect.top - desktopRect.top
     }
     setIsDragging(true)
     wasDraggingRef.current = false
@@ -26,10 +34,11 @@ export function DesktopIcon({ iconType, label, onClick, iconSrc, position, onPos
   useEffect(() => {
     if (!isDragging) return
 
-    const handleMouseMove = (e) => {
+    const handleMove = (e) => {
+      const coords = getClientCoords(e)
       const desktopRect = iconRef.current.parentElement.getBoundingClientRect()
-      const newX = e.clientX - desktopRect.left - dragOffsetRef.current.x
-      const newY = e.clientY - desktopRect.top - dragOffsetRef.current.y
+      const newX = coords.x - desktopRect.left - dragOffsetRef.current.x
+      const newY = coords.y - desktopRect.top - dragOffsetRef.current.y
       
       // Ограничиваем перемещение в пределах рабочего стола
       const maxX = desktopRect.width - 80
@@ -42,16 +51,20 @@ export function DesktopIcon({ iconType, label, onClick, iconSrc, position, onPos
       wasDraggingRef.current = true
     }
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       setIsDragging(false)
     }
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('mousemove', handleMove)
+    document.addEventListener('mouseup', handleEnd)
+    document.addEventListener('touchmove', handleMove, { passive: false })
+    document.addEventListener('touchend', handleEnd)
     
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mousemove', handleMove)
+      document.removeEventListener('mouseup', handleEnd)
+      document.removeEventListener('touchmove', handleMove)
+      document.removeEventListener('touchend', handleEnd)
     }
   }, [isDragging, id, onPositionChange])
 
@@ -67,10 +80,12 @@ export function DesktopIcon({ iconType, label, onClick, iconSrc, position, onPos
         userSelect: 'none',
         cursor: isDragging ? 'grabbing' : 'pointer',
         opacity: isDragging ? 0.8 : 1,
+        touchAction: 'none',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleMouseDown}
       onClick={(e) => {
         // Клик срабатывает только если не было перетаскивания
         if (!wasDraggingRef.current) {
@@ -120,5 +135,5 @@ export function DesktopIcon({ iconType, label, onClick, iconSrc, position, onPos
       </span>
     </div>
   )
-}
+})
 

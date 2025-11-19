@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 export function SearchWindow({ onOpenWindow }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('all') // all, projects, skills, about
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
 
   // Функция подсветки найденных слов
   const highlightText = (text, query) => {
@@ -389,12 +390,15 @@ export function SearchWindow({ onOpenWindow }) {
       <div style={{
         flex: 1,
         background: '#FFFFFF',
-        padding: '16px',
+        padding: isMobile ? '12px' : '16px',
         overflow: 'auto',
       }}>
         {/* Поле поиска */}
         <div style={{
-          marginBottom: '20px',
+          marginBottom: isMobile ? '12px' : '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: isMobile ? 'center' : 'stretch',
         }}>
           <label style={{
             display: 'block',
@@ -402,6 +406,8 @@ export function SearchWindow({ onOpenWindow }) {
             fontSize: 'var(--font-size, 9pt)',
             fontWeight: 'bold',
             color: '#000080',
+            width: isMobile ? '100%' : 'auto',
+            textAlign: isMobile ? 'center' : 'left',
           }}>
             Поиск:
           </label>
@@ -417,7 +423,8 @@ export function SearchWindow({ onOpenWindow }) {
               }
             }}
             style={{
-              width: '100%',
+              width: isMobile ? '90%' : '100%',
+              maxWidth: isMobile ? '400px' : 'none',
               height: '23px',
               padding: '0 8px',
               background: '#FFFFFF',
@@ -442,7 +449,7 @@ export function SearchWindow({ onOpenWindow }) {
         {/* Фильтры */}
         {hasQuery && (
           <div style={{
-            marginBottom: '16px',
+            marginBottom: isMobile ? '10px' : '16px',
             display: 'flex',
             gap: '4px',
             flexWrap: 'wrap',
@@ -511,7 +518,7 @@ export function SearchWindow({ onOpenWindow }) {
           <div>
             {!hasResults ? (
               <div style={{
-                padding: '20px',
+                padding: isMobile ? '12px' : '20px',
                 textAlign: 'center',
                 color: '#808080',
                 fontSize: 'var(--font-size, 9pt)',
@@ -527,11 +534,11 @@ export function SearchWindow({ onOpenWindow }) {
               <div>
                 {/* Проекты */}
                 {filteredResults.projects.length > 0 && (
-                  <div style={{ marginBottom: '24px' }}>
+                  <div style={{ marginBottom: isMobile ? '16px' : '24px' }}>
                     <h3 style={{
                       margin: '0 0 12px 0',
                       padding: 0,
-                      fontSize: 'var(--font-size, 10pt)',
+                      fontSize: isMobile ? 'var(--font-size, 9pt)' : 'var(--font-size, 10pt)',
                       fontWeight: 'bold',
                       color: '#000080',
                     }}>
@@ -540,14 +547,14 @@ export function SearchWindow({ onOpenWindow }) {
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '12px',
+                      gap: isMobile ? '8px' : '12px',
                     }}>
                       {filteredResults.projects.map((result) => (
                         <div
                           key={result.service.id}
                           onClick={() => onOpenWindow && onOpenWindow('projects')}
                           style={{
-                            padding: '12px',
+                            padding: isMobile ? '8px' : '12px',
                             background: '#FFFFFF',
                             border: '2px solid',
                             borderTopColor: '#FFFFFF',
@@ -641,11 +648,11 @@ export function SearchWindow({ onOpenWindow }) {
 
                 {/* Навыки */}
                 {filteredResults.skills.length > 0 && (
-                  <div style={{ marginBottom: '24px' }}>
+                  <div style={{ marginBottom: isMobile ? '16px' : '24px' }}>
                     <h3 style={{
                       margin: '0 0 12px 0',
                       padding: 0,
-                      fontSize: 'var(--font-size, 10pt)',
+                      fontSize: isMobile ? 'var(--font-size, 9pt)' : 'var(--font-size, 10pt)',
                       fontWeight: 'bold',
                       color: '#000080',
                     }}>
@@ -696,7 +703,7 @@ export function SearchWindow({ onOpenWindow }) {
                     <h3 style={{
                       margin: '0 0 12px 0',
                       padding: 0,
-                      fontSize: 'var(--font-size, 10pt)',
+                      fontSize: isMobile ? 'var(--font-size, 9pt)' : 'var(--font-size, 10pt)',
                       fontWeight: 'bold',
                       color: '#000080',
                     }}>
@@ -705,14 +712,14 @@ export function SearchWindow({ onOpenWindow }) {
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '12px',
+                      gap: isMobile ? '8px' : '12px',
                     }}>
                       {filteredResults.about.map((result, index) => (
                         <div
                           key={index}
                           onClick={() => result.category === 'team' && onOpenWindow && onOpenWindow('about')}
                           style={{
-                            padding: '12px',
+                            padding: isMobile ? '8px' : '12px',
                             background: '#FFFFFF',
                             border: '2px solid',
                             borderTopColor: '#FFFFFF',
@@ -883,7 +890,7 @@ export function SearchWindow({ onOpenWindow }) {
         {/* Подсказка при пустом запросе */}
         {!hasQuery && (
           <div style={{
-            padding: '20px',
+            padding: isMobile ? '12px' : '20px',
             textAlign: 'center',
             color: '#808080',
             fontSize: 'var(--font-size, 9pt)',

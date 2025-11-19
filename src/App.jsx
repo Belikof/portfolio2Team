@@ -1,22 +1,25 @@
 import './index.css'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense, memo } from 'react'
 import { addScrollbarStyles } from './utils/scrollbarStyles'
 import { iconPaths } from './constants/iconPaths'
 import { DesktopIcon } from './components/DesktopIcon'
 import { Window } from './components/Window'
 import { LoadingScreen } from './components/LoadingScreen'
 import { StartMenu } from './components/StartMenu'
-import { SettingsWindow } from './components/settings/SettingsWindow'
-import { DisplaySettingsContent } from './components/settings/DisplaySettingsContent'
-import { SoundsSettingsContent } from './components/settings/SoundsSettingsContent'
-import { RecycleBinWindow } from './components/windows/RecycleBinWindow'
-import { ContactFormWindow } from './components/windows/ContactFormWindow'
-import { GamesWindow } from './components/windows/GamesWindow'
-import { MinesweeperGame } from './components/windows/MinesweeperGame'
-import { SnakeGame } from './components/windows/SnakeGame'
-import { ProjectsWindow } from './components/windows/ProjectsWindow'
-import { AboutWindow } from './components/windows/AboutWindow'
-import { SearchWindow } from './components/windows/SearchWindow'
+
+// Lazy loading для окон
+const SettingsWindow = lazy(() => import('./components/settings/SettingsWindow').then(m => ({ default: m.SettingsWindow })))
+const DisplaySettingsContent = lazy(() => import('./components/settings/DisplaySettingsContent').then(m => ({ default: m.DisplaySettingsContent })))
+const SoundsSettingsContent = lazy(() => import('./components/settings/SoundsSettingsContent').then(m => ({ default: m.SoundsSettingsContent })))
+const RecycleBinWindow = lazy(() => import('./components/windows/RecycleBinWindow').then(m => ({ default: m.RecycleBinWindow })))
+const ContactFormWindow = lazy(() => import('./components/windows/ContactFormWindow').then(m => ({ default: m.ContactFormWindow })))
+const GamesWindow = lazy(() => import('./components/windows/GamesWindow').then(m => ({ default: m.GamesWindow })))
+const MinesweeperGame = lazy(() => import('./components/windows/MinesweeperGame').then(m => ({ default: m.MinesweeperGame })))
+const SnakeGame = lazy(() => import('./components/windows/SnakeGame').then(m => ({ default: m.SnakeGame })))
+const ProjectsWindow = lazy(() => import('./components/windows/ProjectsWindow').then(m => ({ default: m.ProjectsWindow })))
+const AboutWindow = lazy(() => import('./components/windows/AboutWindow').then(m => ({ default: m.AboutWindow })))
+const SearchWindow = lazy(() => import('./components/windows/SearchWindow').then(m => ({ default: m.SearchWindow })))
+const WinampPlayer = lazy(() => import('./components/windows/WinampPlayer').then(m => ({ default: m.WinampPlayer })))
 
 
 function App() {
@@ -33,11 +36,13 @@ function App() {
   })
   const [iconSize, setIconSize] = useState(() => {
     const saved = localStorage.getItem('iconSize')
-    return saved ? parseInt(saved) : 32
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+    return saved ? parseInt(saved) : (isMobile ? 24 : 32)
   })
   const [fontSize, setFontSize] = useState(() => {
     const saved = localStorage.getItem('fontSize')
-    return saved ? parseInt(saved) : 9
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+    return saved ? parseInt(saved) : (isMobile ? 10 : 9)
   })
   const [soundsEnabled, setSoundsEnabled] = useState(() => {
     const saved = localStorage.getItem('soundsEnabled')
@@ -72,31 +77,59 @@ function App() {
     return null
   }
 
-  const defaultPositions = {
-    about: { x: 20, y: 20 },
-    projects: { x: 20, y: 100 },
-    contact: { x: 20, y: 180 },
-    dev: { x: 20, y: 260 },
-    games: { x: 20, y: 340 },
-    recycleBin: { x: 20, y: 420 },
+  const getDefaultPositions = () => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (isMobile) {
+      return {
+        about: { x: 10, y: 10 },
+        projects: { x: 10, y: 80 },
+        contact: { x: 10, y: 150 },
+        dev: { x: 10, y: 220 },
+        games: { x: 100, y: 10 },
+        recycleBin: { x: 100, y: 80 },
+        winamp: { x: 100, y: 150 },
+      }
+    }
+    return {
+      about: { x: 20, y: 20 },
+      projects: { x: 20, y: 100 },
+      contact: { x: 20, y: 180 },
+      dev: { x: 20, y: 260 },
+      games: { x: 20, y: 340 },
+      recycleBin: { x: 20, y: 420 },
+      winamp: { x: 20, y: 500 },
+    }
   }
+
+  const defaultPositions = getDefaultPositions()
 
   const [iconPositions, setIconPositions] = useState(() => {
     const saved = loadIconPositions()
     return saved || defaultPositions
   })
 
-  // Сохраняем позиции в localStorage при изменении
+  // Debounce для сохранения позиций в localStorage
+  const saveTimeoutRef = useRef(null)
   useEffect(() => {
-    localStorage.setItem('desktopIconPositions', JSON.stringify(iconPositions))
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      localStorage.setItem('desktopIconPositions', JSON.stringify(iconPositions))
+    }, 300)
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
   }, [iconPositions])
 
-  const handlePositionChange = (id, newPosition) => {
+  const handlePositionChange = useCallback((id, newPosition) => {
     setIconPositions(prev => ({
       ...prev,
       [id]: newPosition
     }))
-  }
+  }, [])
 
   // Управление окнами
   const [windows, setWindows] = useState({})
@@ -180,7 +213,7 @@ function App() {
     </svg>
   `)
 
-  const windowConfigs = {
+  const windowConfigs = useMemo(() => ({
     search: { title: 'Поиск', icon: iconPaths.search },
     about: { title: 'О нас', icon: iconPaths.about },
     projects: { title: 'Наши проекты', icon: iconPaths.projects },
@@ -193,20 +226,37 @@ function App() {
     settings: { title: 'Настройки', icon: iconPaths.settings },
     displaySettings: { title: 'Свойства: Экран', icon: displayIcon },
     soundsSettings: { title: 'Свойства: Звуки и мультимедиа', icon: soundsIcon },
-  }
+    winamp: { title: 'Winamp', icon: iconPaths.winamp },
+  }), [displayIcon, soundsIcon])
 
   const openWindow = (id) => {
+    const isMobile = window.innerWidth <= 768
+    // Окно contact не разворачиваем на весь экран на мобильных
+    const shouldMaximize = isMobile && id !== 'contact'
     setWindows(prev => ({
       ...prev,
       [id]: {
         isOpen: true,
         isMinimized: false,
-        isMaximized: false,
+        isMaximized: shouldMaximize, // На мобильных сразу разворачиваем, кроме contact
       }
     }))
     
     setWindowPositions(prev => {
       if (!prev[id]) {
+        if (isMobile && shouldMaximize) {
+          return {
+            ...prev,
+            [id]: { x: 0, y: 0 }
+          }
+        }
+        if (isMobile && id === 'contact') {
+          // Для окна contact на мобильных центрируем по вертикали
+          return {
+            ...prev,
+            [id]: { x: 10, y: Math.max(10, (window.innerHeight - 240) / 2) }
+          }
+        }
         // Окна открываются снизу справа от кнопки "Пуск"
         const startButtonWidth = 75
         const offsetX = startButtonWidth + 10
@@ -302,7 +352,20 @@ function App() {
   }
 
 
-  const handleIconClick = (id) => {
+  const handleIconClick = useCallback((id) => {
+    if (id === 'logoff') {
+      if (window.confirm('Вы действительно хотите выйти из системы?')) {
+        window.location.reload()
+      }
+      return
+    }
+    if (id === 'shutdown') {
+      if (window.confirm('Вы действительно хотите выключить компьютер?')) {
+        // Можно добавить анимацию выключения или просто перезагрузку
+        window.location.reload()
+      }
+      return
+    }
     if (windows[id]?.isOpen) {
       if (windows[id].isMinimized) {
         minimizeWindow(id, false)
@@ -311,47 +374,49 @@ function App() {
     } else {
       openWindow(id)
     }
-  }
+  }, [windows])
 
-  const desktopIcons = [
+  const desktopIcons = useMemo(() => [
     { iconType: 'about', label: 'О нас', id: 'about', iconSrc: iconPaths.about },
     { iconType: 'projects', label: 'Наши проекты', id: 'projects', iconSrc: iconPaths.projects },
     { iconType: 'contact', label: 'Записаться на созвон', id: 'contact', iconSrc: iconPaths.contact },
     { iconType: 'dev', label: 'В разработке', id: 'dev', iconSrc: iconPaths.dev },
     { iconType: 'games', label: 'Игры', id: 'games', iconSrc: iconPaths.games },
     { iconType: 'recycleBin', label: 'Корзина', id: 'recycleBin', iconSrc: iconPaths.recycleBin },
-  ]
+    { iconType: 'winamp', label: 'Winamp', id: 'winamp', iconSrc: iconPaths.winamp },
+  ], [])
 
-  // Применяем настройки обоев
+  // Debounce для сохранения настроек в localStorage
+  const settingsTimeoutRef = useRef(null)
   useEffect(() => {
-    localStorage.setItem('wallpaper', wallpaper)
-  }, [wallpaper])
+    if (settingsTimeoutRef.current) {
+      clearTimeout(settingsTimeoutRef.current)
+    }
+    settingsTimeoutRef.current = setTimeout(() => {
+      localStorage.setItem('wallpaper', wallpaper)
+      localStorage.setItem('iconSize', iconSize.toString())
+      localStorage.setItem('fontSize', fontSize.toString())
+      localStorage.setItem('soundsEnabled', soundsEnabled.toString())
+    }, 300)
+    return () => {
+      if (settingsTimeoutRef.current) {
+        clearTimeout(settingsTimeoutRef.current)
+      }
+    }
+  }, [wallpaper, iconSize, fontSize, soundsEnabled])
 
+  // Устанавливаем CSS переменную для размера шрифта
   useEffect(() => {
-    localStorage.setItem('iconSize', iconSize.toString())
-  }, [iconSize])
-
-  useEffect(() => {
-    localStorage.setItem('fontSize', fontSize.toString())
     document.documentElement.style.setProperty('--font-size', `${fontSize}pt`)
   }, [fontSize])
-  
-  // Устанавливаем начальное значение CSS переменной при монтировании
-  useEffect(() => {
-    document.documentElement.style.setProperty('--font-size', `${fontSize}pt`)
-  }, [])
 
-  useEffect(() => {
-    localStorage.setItem('soundsEnabled', soundsEnabled.toString())
-  }, [soundsEnabled])
-
-  const availableWallpapers = [
+  const availableWallpapers = useMemo(() => [
     { name: 'Поле и облака', path: '/wallpapers/pole-oblaka-nebo-windows.jpg' },
     { name: 'Bliss', path: '/wallpapers/bliss.jpg' },
     { name: 'Пустыня', path: '/wallpapers/desert.jpeg' },
     { name: 'Айсберг', path: '/wallpapers/iceberg.jpeg' },
     { name: 'Горы', path: '/wallpapers/mountains.jpeg' },
-  ]
+  ], [])
 
   return (
     <>
@@ -372,7 +437,14 @@ function App() {
         }}
       >
       {/* Desktop */}
-      <div className="flex-1 relative" style={{ width: '100%', height: '100%' }}>
+      <div 
+        className="flex-1 relative" 
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          paddingBottom: typeof window !== 'undefined' && window.innerWidth <= 768 ? '40px' : '30px',
+        }}
+      >
         {desktopIcons.map((item) => (
           <DesktopIcon
             key={item.id}
@@ -414,84 +486,119 @@ function App() {
                 undefined
               }
               initialSize={
-                id === 'search' ? { width: 600, height: 500 } :
-                id === 'contact' ? { width: 500, height: 220 } :
-                id === 'projects' ? { width: 700, height: 500 } :
-                id === 'about' ? { width: 600, height: 700 } :
-                id === 'minesweeper' ? { width: 300, height: 250 } :
-                id === 'snake' ? { width: 340, height: 370 } :
-                undefined
+                (() => {
+                  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+                  if (id === 'search') {
+                    return { 
+                      width: isMobile ? window.innerWidth - 20 : 600, 
+                      height: isMobile ? 350 : 500 
+                    }
+                  }
+                  if (id === 'contact') {
+                    return { 
+                      width: isMobile ? window.innerWidth - 20 : 500, 
+                      height: isMobile ? 240 : 220 
+                    }
+                  }
+                  if (isMobile) {
+                    return {
+                      width: typeof window !== 'undefined' ? window.innerWidth - 20 : 600,
+                      height: typeof window !== 'undefined' ? window.innerHeight - 50 : 400
+                    }
+                  }
+                  return id === 'projects' ? { width: 700, height: 500 } :
+                    id === 'about' ? { width: 600, height: 700 } :
+                    id === 'minesweeper' ? { width: 300, height: 250 } :
+                    id === 'snake' ? { width: 340, height: 370 } :
+                    id === 'winamp' ? { width: 300, height: 500 } :
+                    undefined
+                })()
               }
             >
-              {id === 'settings' ? (
-                <SettingsWindow 
-                  wallpaper={wallpaper}
-                  setWallpaper={setWallpaper}
-                  iconSize={iconSize}
-                  setIconSize={setIconSize}
-                  soundsEnabled={soundsEnabled}
-                  setSoundsEnabled={setSoundsEnabled}
-                  availableWallpapers={availableWallpapers}
-                  onOpenDisplayWindow={() => {
-                    openWindow('displaySettings')
-                    setTimeout(() => focusWindow('displaySettings'), 0)
-                  }}
-                  onOpenSoundsWindow={() => {
-                    openWindow('soundsSettings')
-                    setTimeout(() => focusWindow('soundsSettings'), 0)
-                  }}
-                />
-              ) : id === 'displaySettings' ? (
-                <DisplaySettingsContent
-                  wallpaper={wallpaper}
-                  setWallpaper={setWallpaper}
-                  iconSize={iconSize}
-                  setIconSize={setIconSize}
-                  fontSize={fontSize}
-                  setFontSize={setFontSize}
-                  availableWallpapers={availableWallpapers}
-                />
-              ) : id === 'soundsSettings' ? (
-                <SoundsSettingsContent
-                  soundsEnabled={soundsEnabled}
-                  setSoundsEnabled={setSoundsEnabled}
-                />
-              ) : id === 'recycleBin' ? (
-                <RecycleBinWindow />
-              ) : id === 'about' ? (
-                <AboutWindow />
-              ) : id === 'contact' ? (
-                <ContactFormWindow />
-              ) : id === 'projects' ? (
-                <ProjectsWindow />
-              ) : id === 'games' ? (
-                <GamesWindow 
-                  onGameClick={(gameId) => {
-                    if (gameId === 'minesweeper') {
-                      openWindow('minesweeper')
-                      setTimeout(() => focusWindow('minesweeper'), 0)
-                    } else if (gameId === 'snake') {
-                      openWindow('snake')
-                      setTimeout(() => focusWindow('snake'), 0)
-                    }
-                  }}
-                />
-              ) : id === 'minesweeper' ? (
-                <MinesweeperGame 
-                  onSizeChange={handleMinesweeperSizeChange}
-                />
-              ) : id === 'snake' ? (
-                <SnakeGame 
-                  onSizeChange={handleSnakeSizeChange}
-                />
-              ) : id === 'search' ? (
-                <SearchWindow 
-                  onOpenWindow={(windowId) => {
-                    openWindow(windowId)
-                    setTimeout(() => focusWindow(windowId), 0)
-                  }}
-                />
-              ) : (
+              <Suspense fallback={
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  height: '100%',
+                  color: '#000000',
+                  fontSize: 'var(--font-size, 8pt)',
+                  fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
+                }}>
+                  Загрузка...
+                </div>
+              }>
+                {id === 'settings' ? (
+                  <SettingsWindow 
+                    wallpaper={wallpaper}
+                    setWallpaper={setWallpaper}
+                    iconSize={iconSize}
+                    setIconSize={setIconSize}
+                    soundsEnabled={soundsEnabled}
+                    setSoundsEnabled={setSoundsEnabled}
+                    availableWallpapers={availableWallpapers}
+                    onOpenDisplayWindow={() => {
+                      openWindow('displaySettings')
+                      setTimeout(() => focusWindow('displaySettings'), 0)
+                    }}
+                    onOpenSoundsWindow={() => {
+                      openWindow('soundsSettings')
+                      setTimeout(() => focusWindow('soundsSettings'), 0)
+                    }}
+                  />
+                ) : id === 'displaySettings' ? (
+                  <DisplaySettingsContent
+                    wallpaper={wallpaper}
+                    setWallpaper={setWallpaper}
+                    iconSize={iconSize}
+                    setIconSize={setIconSize}
+                    fontSize={fontSize}
+                    setFontSize={setFontSize}
+                    availableWallpapers={availableWallpapers}
+                  />
+                ) : id === 'soundsSettings' ? (
+                  <SoundsSettingsContent
+                    soundsEnabled={soundsEnabled}
+                    setSoundsEnabled={setSoundsEnabled}
+                  />
+                ) : id === 'recycleBin' ? (
+                  <RecycleBinWindow />
+                ) : id === 'about' ? (
+                  <AboutWindow />
+                ) : id === 'contact' ? (
+                  <ContactFormWindow />
+                ) : id === 'projects' ? (
+                  <ProjectsWindow />
+                ) : id === 'games' ? (
+                  <GamesWindow 
+                    onGameClick={(gameId) => {
+                      if (gameId === 'minesweeper') {
+                        openWindow('minesweeper')
+                        setTimeout(() => focusWindow('minesweeper'), 0)
+                      } else if (gameId === 'snake') {
+                        openWindow('snake')
+                        setTimeout(() => focusWindow('snake'), 0)
+                      }
+                    }}
+                  />
+                ) : id === 'minesweeper' ? (
+                  <MinesweeperGame 
+                    onSizeChange={handleMinesweeperSizeChange}
+                  />
+                ) : id === 'snake' ? (
+                  <SnakeGame 
+                    onSizeChange={handleSnakeSizeChange}
+                  />
+                ) : id === 'search' ? (
+                  <SearchWindow 
+                    onOpenWindow={(windowId) => {
+                      openWindow(windowId)
+                      setTimeout(() => focusWindow(windowId), 0)
+                    }}
+                  />
+                ) : id === 'winamp' ? (
+                  <WinampPlayer />
+                ) : (
                 <div style={{ 
                   color: '#000000', 
                   fontSize: 'var(--font-size, 8pt)',
@@ -529,7 +636,8 @@ function App() {
                   <p>Строка 19</p>
                   <p>Строка 20</p>
                 </div>
-              )}
+                )}
+              </Suspense>
             </Window>
           )
         })}
@@ -537,13 +645,19 @@ function App() {
 
       {/* Taskbar */}
       <div
-        className="w-full flex items-center relative"
+        className="w-full flex items-center"
         style={{
-          height: '30px',
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: typeof window !== 'undefined' && window.innerWidth <= 768 ? '40px' : '30px',
           background: '#C0C0C0',
           borderTop: '1px solid #000000',
           boxShadow: 'inset 0 1px 0 #FFFFFF',
           padding: '0',
+          fontSize: typeof window !== 'undefined' && window.innerWidth <= 768 ? '10pt' : 'var(--font-size, 8pt)',
+          zIndex: 9999,
         }}
       >
         {/* Start Menu */}
@@ -556,6 +670,7 @@ function App() {
         )}
         {/* Start Button with Windows Logo */}
         <button
+          id="start-button"
           onClick={() => setStartMenuOpen(!startMenuOpen)}
           className="h-full flex items-center border cursor-pointer"
           style={{
@@ -574,9 +689,9 @@ function App() {
             color: '#000000',
             fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
             fontWeight: 'bold',
-            minWidth: '75px',
-            height: '30px',
-            fontSize: 'var(--font-size, 8pt)',
+            minWidth: typeof window !== 'undefined' && window.innerWidth <= 768 ? '60px' : '75px',
+            height: typeof window !== 'undefined' && window.innerWidth <= 768 ? '40px' : '30px',
+            fontSize: typeof window !== 'undefined' && window.innerWidth <= 768 ? '9pt' : 'var(--font-size, 8pt)',
             paddingLeft: '5px',
             paddingRight: '5px',
             gap: '4px',
@@ -652,19 +767,27 @@ function App() {
 
         {/* Task Area (for open windows) */}
         <div 
-          className="flex-1 flex items-center gap-1" 
+          className="flex-1 flex items-center gap-1 overflow-x-auto" 
           style={{ 
             height: '100%',
             background: '#C0C0C0',
             paddingLeft: '2px',
             paddingRight: '2px',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
           }} 
         >
+          <style>{`
+            .task-area::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
           {Object.entries(windows).map(([id, windowState]) => {
             const config = windowConfigs[id]
             if (!config) return null
 
             const isActive = windowZIndexes[id] === Math.max(...Object.values(windowZIndexes).filter(v => v), 1000)
+            const isMobile = window.innerWidth <= 768
 
             return (
               <button
@@ -676,9 +799,9 @@ function App() {
                   focusWindow(id)
                 }}
                 style={{
-                  height: '22px',
-                  minWidth: '120px',
-                  maxWidth: '200px',
+                  height: isMobile ? '32px' : '22px',
+                  minWidth: isMobile ? '80px' : '120px',
+                  maxWidth: isMobile ? '150px' : '200px',
                   background: isActive && !windowState.isMinimized
                     ? 'linear-gradient(to bottom, #E8E8E8 0%, #C0C0C0 50%, #A8A8A8 100%)'
                     : '#C0C0C0',
@@ -782,9 +905,9 @@ function App() {
             background: '#C0C0C0',
             fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
             color: '#000000',
-            minWidth: '130px',
+            minWidth: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100px' : '130px',
             justifyContent: 'flex-end',
-            height: '30px',
+            height: typeof window !== 'undefined' && window.innerWidth <= 768 ? '40px' : '30px',
             paddingRight: '2px',
             paddingLeft: '2px',
           }}
@@ -827,10 +950,10 @@ function App() {
               borderLeft: '1px solid #808080',
               borderRight: '1px solid #FFFFFF',
               borderBottom: '1px solid #FFFFFF',
-              width: '45px',
-              height: '22px',
+              width: typeof window !== 'undefined' && window.innerWidth <= 768 ? '55px' : '45px',
+              height: typeof window !== 'undefined' && window.innerWidth <= 768 ? '32px' : '22px',
               fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
-              fontSize: 'var(--font-size, 8pt)',
+              fontSize: typeof window !== 'undefined' && window.innerWidth <= 768 ? '9pt' : 'var(--font-size, 8pt)',
               lineHeight: '1',
               textRendering: 'optimizeSpeed',
               WebkitFontSmoothing: 'none',

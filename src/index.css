@@ -335,3 +335,27 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  body {
+    overflow: hidden;
+    touch-action: pan-x pan-y;
+  }
+
+  /* Уменьшаем размеры иконок на рабочем столе */
+  .desktop-icon {
+    width: 60px !important;
+  }
+
+  /* Адаптируем кнопки в окнах */
+  button {
+    min-height: 32px;
+    padding: 4px 8px;
+  }
+
+  /* Улучшаем читаемость текста */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+}

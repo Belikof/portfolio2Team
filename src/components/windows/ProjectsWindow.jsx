@@ -114,7 +114,7 @@ export function ProjectsWindow() {
     <div style={{ 
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
+      minHeight: '100%',
       background: '#ECE9D8',
       fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
       fontSize: 'var(--font-size, 8pt)',
@@ -129,7 +129,7 @@ export function ProjectsWindow() {
         flex: 1,
         background: '#FFFFFF',
         padding: '16px',
-        overflow: 'auto',
+        paddingBottom: '24px',
       }}>
         {services.length === 0 ? (
           <div style={{
@@ -153,6 +153,7 @@ export function ProjectsWindow() {
                 key={service.id}
                 style={{
                   display: 'flex',
+                  flexDirection: typeof window !== 'undefined' && window.innerWidth <= 768 ? 'column' : 'row',
                   gap: '16px',
                   padding: '16px',
                   background: '#FFFFFF',
@@ -167,8 +168,8 @@ export function ProjectsWindow() {
                 {/* Изображение слева */}
                 <div style={{
                   flexShrink: 0,
-                  width: '180px',
-                  height: '140px',
+                  width: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100%' : '300px',
+                  height: typeof window !== 'undefined' && window.innerWidth <= 768 ? '200px' : '220px',
                   background: '#ECE9D8',
                   border: '1px solid',
                   borderTopColor: '#808080',
@@ -185,6 +186,8 @@ export function ProjectsWindow() {
                   <img
                     src={service.image}
                     alt={service.title}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -212,6 +215,7 @@ export function ProjectsWindow() {
                   flexDirection: 'column',
                   gap: '10px',
                   paddingTop: '4px',
+                  minWidth: 0,
                 }}>
                   <div style={{
                     display: 'flex',
@@ -256,14 +260,17 @@ export function ProjectsWindow() {
                   <p style={{
                     margin: 0,
                     padding: 0,
-                    fontSize: 'var(--font-size, 8pt)',
+                    fontSize: 'var(--font-size, 9pt)',
                     color: '#000000',
                     fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
-                    lineHeight: '1.5',
+                    lineHeight: '1.6',
                     textRendering: 'optimizeSpeed',
                     WebkitFontSmoothing: 'none',
                     MozOsxFontSmoothing: 'grayscale',
                     fontSmooth: 'never',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    maxWidth: '100%',
                   }}>
                     {service.description}
                   </p>

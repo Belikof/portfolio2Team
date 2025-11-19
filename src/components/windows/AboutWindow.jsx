@@ -246,6 +246,7 @@ export function AboutWindow() {
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
+      minHeight: 0,
       background: '#ECE9D8',
       fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
       fontSize: 'var(--font-size, 8pt)',
@@ -258,9 +259,13 @@ export function AboutWindow() {
       {/* Main Content */}
       <div style={{
         flex: 1,
+        minHeight: 0,
         background: '#FFFFFF',
         padding: '16px',
+        paddingBottom: '100px',
         overflow: 'auto',
+        overflowY: 'scroll',
+        WebkitOverflowScrolling: 'touch',
       }}>
         {/* Команда - карточки с фото */}
         <div style={{
@@ -327,6 +332,8 @@ export function AboutWindow() {
                     src={member.photo}
                     alt={member.name}
                     className="team-photo"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -486,22 +493,22 @@ export function AboutWindow() {
           </h2>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '24px',
+            gridTemplateColumns: 'repeat(2, auto)',
+            gap: '20px',
             justifyContent: 'center',
             alignItems: 'center',
-            maxWidth: '400px',
-            margin: '0 auto',
+            width: '100%',
           }}>
             {circularStats.map((stat, index) => (
-              <CircularChart
-                key={index}
-                percentage={stat.percentage}
-                label={stat.label}
-                color={stat.color}
-                size={160}
-                uniqueId={index}
-              />
+              <div key={index} style={{ display: 'flex', justifyContent: 'center' }}>
+                <CircularChart
+                  percentage={stat.percentage}
+                  label={stat.label}
+                  color={stat.color}
+                  size={150}
+                  uniqueId={index}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -706,7 +713,7 @@ export function AboutWindow() {
           borderRightColor: '#808080',
           borderBottomColor: '#808080',
           boxShadow: 'inset -1px -1px 0px #424142, inset 1px 1px 0px #C0C0C0',
-          marginBottom: '24px',
+          marginBottom: '0',
         }}>
           <h2 style={{
             margin: '0 0 12px 0',
@@ -741,7 +748,7 @@ export function AboutWindow() {
             <p style={{ margin: '0 0 8px 0' }}>
               <strong>Современные технологии.</strong> Используем актуальные инструменты и лучшие практики разработки.
             </p>
-            <p style={{ margin: '0' }}>
+            <p style={{ margin: '0 0 16px 0' }}>
               <strong>Сроки и бюджет.</strong> Соблюдаем договоренности и предлагаем оптимальные решения.
             </p>
           </div>
@@ -758,6 +765,7 @@ export function AboutWindow() {
         fontSize: 'var(--font-size, 8pt)',
         height: '22px',
         alignItems: 'center',
+        flexShrink: 0,
       }}>
         <span>Команда: {teamMembers.length} человек(а)</span>
         <span>Технологий: {techStack.length}</span>

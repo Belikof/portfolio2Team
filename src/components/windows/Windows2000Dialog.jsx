@@ -11,6 +11,8 @@ export function Windows2000Dialog({ message, onClose, title = 'Ошибка', ty
     return () => document.removeEventListener('keydown', handleEscape)
   }, [onClose])
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+
   return (
     <div
       style={{
@@ -24,6 +26,8 @@ export function Windows2000Dialog({ message, onClose, title = 'Ошибка', ty
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 10000,
+        padding: isMobile ? '16px' : '0',
+        boxSizing: 'border-box',
       }}
       onClick={onClose}
     >
@@ -36,14 +40,16 @@ export function Windows2000Dialog({ message, onClose, title = 'Ошибка', ty
           borderRightColor: '#424142',
           borderBottomColor: '#424142',
           boxShadow: 'inset -1px -1px 0px #808080, inset 1px 1px 0px #FFFFFF',
-          minWidth: '300px',
-          maxWidth: '400px',
+          minWidth: isMobile ? 'calc(100% - 32px)' : '300px',
+          maxWidth: isMobile ? 'calc(100% - 32px)' : '400px',
+          width: isMobile ? 'calc(100% - 32px)' : 'auto',
           fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
           fontSize: 'var(--font-size, 8pt)',
           textRendering: 'optimizeSpeed',
           WebkitFontSmoothing: 'none',
           MozOsxFontSmoothing: 'grayscale',
           fontSmooth: 'never',
+          margin: 'auto',
         }}
         onClick={(e) => e.stopPropagation()}
       >

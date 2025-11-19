@@ -63,19 +63,61 @@ export function GamesWindow({ onGameClick }) {
           />
           <span style={{ fontSize: 'var(--font-size, 8pt)' }}>Игры</span>
         </div>
-        <button style={{
-          padding: '2px 8px',
-          background: '#C0C0C0',
-          border: '1px solid',
-          borderTopColor: '#FFFFFF',
-          borderLeftColor: '#FFFFFF',
-          borderRightColor: '#424142',
-          borderBottomColor: '#424142',
-          fontSize: 'var(--font-size, 8pt)',
-          cursor: 'pointer',
-          borderRadius: '0',
-          fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
-        }}>Перейти</button>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation()
+            // Визуальная обратная связь при клике
+            const btn = e.currentTarget
+            btn.style.borderTopColor = '#424142'
+            btn.style.borderLeftColor = '#424142'
+            btn.style.borderRightColor = '#FFFFFF'
+            btn.style.borderBottomColor = '#FFFFFF'
+            setTimeout(() => {
+              btn.style.borderTopColor = '#FFFFFF'
+              btn.style.borderLeftColor = '#FFFFFF'
+              btn.style.borderRightColor = '#424142'
+              btn.style.borderBottomColor = '#424142'
+            }, 100)
+            // Открываем первую игру из списка
+            if (onGameClick && games.length > 0) {
+              onGameClick(games[0].id)
+            }
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation()
+            const btn = e.currentTarget
+            btn.style.borderTopColor = '#424142'
+            btn.style.borderLeftColor = '#424142'
+            btn.style.borderRightColor = '#FFFFFF'
+            btn.style.borderBottomColor = '#FFFFFF'
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation()
+            const btn = e.currentTarget
+            btn.style.borderTopColor = '#FFFFFF'
+            btn.style.borderLeftColor = '#FFFFFF'
+            btn.style.borderRightColor = '#424142'
+            btn.style.borderBottomColor = '#424142'
+            // Открываем первую игру из списка
+            if (onGameClick && games.length > 0) {
+              onGameClick(games[0].id)
+            }
+          }}
+          style={{
+            padding: '2px 8px',
+            background: '#C0C0C0',
+            border: '1px solid',
+            borderTopColor: '#FFFFFF',
+            borderLeftColor: '#FFFFFF',
+            borderRightColor: '#424142',
+            borderBottomColor: '#424142',
+            fontSize: 'var(--font-size, 8pt)',
+            cursor: 'pointer',
+            borderRadius: '0',
+            fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+          }}>Перейти</button>
       </div>
 
       {/* Main Content */}

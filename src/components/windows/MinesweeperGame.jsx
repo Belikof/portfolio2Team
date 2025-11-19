@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { Touchpad } from '../Touchpad'
 
 const BOARD_SIZES = {
   beginner: { rows: 9, cols: 9, mines: 10 },
@@ -15,6 +16,7 @@ export function MinesweeperGame({ onSizeChange }) {
   const [size, setSize] = useState('beginner')
   const containerRef = useRef(null)
   const sizeUpdaterRef = useRef(null)
+  const gameBoardRef = useRef(null)
 
   const { rows, cols, mines } = BOARD_SIZES[size]
 
@@ -232,24 +234,81 @@ export function MinesweeperGame({ onSizeChange }) {
   // Обновляем размер окна при изменении сложности или при первом рендере
   const prevSizeRef = useRef(size)
   const isInitialMount = useRef(true)
+
+  // Проверяем, мобильное ли устройство
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+
+  // Пересчитываем размеры
+  // На мобильных используем разные размеры клеток для разных режимов
+  let cellSize = 16
+  if (isMobile) {
+    if (size === 'beginner') {
+      cellSize = 18 // Увеличиваем для режима новичка
+    } else if (size === 'intermediate') {
+      cellSize = 12 // Уменьшаем для режима любитель
+    }
+  }
+  // Игровое поле: cols * cellSize (клетки) + 4px (border слева) + 4px (border справа) = cols * cellSize + 8
+  const boardWidth = cols * cellSize + 8
+  // Панель управления: ~60px (счетчики + кнопка смайлика + отступы)
+  // Меню выбора сложности: ~40px (кнопки + отступы)
+  // Игровое поле: rows * cellSize + 8px (border)
+  const boardHeight = rows * cellSize + 8
+  const controlPanelHeight = 60 // панель управления
+  const difficultyMenuHeight = 40 // меню выбора сложности
+  const containerPadding = 16 // padding контейнера: 8px сверху + 8px снизу
   
-  const boardWidth = cols * 16 + 4 + 4
-  const totalHeight = rows * 16 + 4 + 4 + 60 + 40
-  const contentWidth = Math.max(300, boardWidth + 16)
-  const contentHeight = totalHeight
+  // Минимальная ширина для кнопок выбора сложности
+  // Кнопки: "Новичок" (~75px), "Любитель" (~80px), "Эксперт" (~75px)
+  // padding кнопок: 2px + 8px слева + 8px справа + 2px = 20px на кнопку
+  // border кнопок: 1px слева + 1px справа = 2px на кнопку
+  // gap между кнопками: 4px * 2 = 8px
+  // Итого: 75 + 80 + 75 + 20*3 + 2*3 + 8 = ~260px
+  // + padding контейнера: 8px слева + 8px справа = 16px
+  // + запас для безопасности: 20px
+  const minButtonsWidth = 260 + 16 + 20
+  // Вычисляем масштаб для мобильных устройств
+  let boardScale = 1
+  let adjustedBoardWidth = boardWidth
+  let adjustedBoardHeight = boardHeight
+  
+  if (isMobile) {
+    // Доступная ширина для контента: ширина экрана - отступы окна - padding контейнера
+    const maxContentWidth = window.innerWidth - 20 - 16 - 10 // отступы окна + padding + запас
+    // Если игровое поле не помещается, масштабируем его
+    if (boardWidth + 16 > maxContentWidth) {
+      boardScale = (maxContentWidth - 16) / boardWidth
+      adjustedBoardWidth = boardWidth * boardScale
+      adjustedBoardHeight = boardHeight * boardScale
+    }
+  }
+  
+  // Контент: ширина игрового поля + padding контейнера (8px слева + 8px справа = 16px), но не меньше минимальной ширины для кнопок
+  const contentWidth = Math.max(minButtonsWidth, adjustedBoardWidth + 16)
+  // Контент: высота игрового поля + панель управления + меню + padding контейнера
+  const contentHeight = adjustedBoardHeight + controlPanelHeight + difficultyMenuHeight + containerPadding
 
   useEffect(() => {
-    // Пересчитываем размеры внутри useEffect
-    const boardWidth = cols * 16 + 4 + 4
-    const totalHeight = rows * 16 + 4 + 4 + 60 + 40
-    const contentWidth = Math.max(300, boardWidth + 16)
-    const contentHeight = totalHeight
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+    const titleBarHeight = isMobile ? 32 : 22
     
-    // Размер окна = размер контента + padding окна (2px со всех сторон) + border окна (2px со всех сторон) + border content (1px со всех сторон) + title bar (18px)
-    // padding: 2px слева + 2px справа = 4px, border: 2px слева + 2px справа = 4px, border content: 1px слева + 1px справа = 2px
-    const windowWidth = contentWidth + 4 + 4 + 2 // padding + border window + border content
-    // padding: 2px сверху + 2px снизу = 4px, border: 2px сверху + 2px снизу = 4px, border content: 1px сверху + 1px снизу = 2px, title bar = 18px
-    const windowHeight = contentHeight + 4 + 4 + 2 + 18 // padding + border window + border content + title bar
+    // Размер окна = размер контента + padding окна (2px со всех сторон) + border окна (2px со всех сторон) + border content (1px со всех сторон) + title bar
+    // Window padding: 2px слева + 2px справа = 4px
+    // Window border: 2px слева + 2px справа = 4px  
+    // Content border: 1px слева + 1px справа = 2px
+    let windowWidth = contentWidth + 4 + 4 + 2
+    // Window padding: 2px сверху + 2px снизу = 4px
+    // Window border: 2px сверху + 2px снизу = 4px
+    // Content border: 1px сверху + 1px снизу = 2px
+    // Title bar: зависит от устройства
+    let windowHeight = contentHeight + 4 + 4 + 2 + titleBarHeight
+    
+    // На мобильных устройствах окно занимает всю доступную ширину
+    if (isMobile) {
+      windowWidth = window.innerWidth - 20 // отступы по 10px с каждой стороны
+      const maxWindowHeight = window.innerHeight - 50 // отступы сверху и снизу
+      windowHeight = Math.min(windowHeight, maxWindowHeight)
+    }
     
     if (sizeUpdaterRef.current && windowWidth > 0 && windowHeight > 0) {
       // Обновляем при первом рендере или при изменении сложности
@@ -283,9 +342,12 @@ export function MinesweeperGame({ onSizeChange }) {
         fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
         fontSize: 'var(--font-size, 8pt)',
         userSelect: 'none',
-        width: `${contentWidth}px`,
+        width: isMobile ? '100%' : `${contentWidth}px`,
         minHeight: `${contentHeight}px`,
+        height: isMobile ? '100%' : 'auto',
+        maxHeight: isMobile ? 'calc(100vh - 150px)' : 'none',
         boxSizing: 'border-box',
+        overflow: isMobile ? 'auto' : 'visible',
       }}>
       {/* Панель управления */}
       <div style={{
@@ -388,17 +450,31 @@ export function MinesweeperGame({ onSizeChange }) {
 
       {/* Игровое поле */}
       <div style={{
-        display: 'inline-grid',
-        gridTemplateColumns: `repeat(${cols}, 16px)`,
-        gap: 0,
-        border: '2px solid',
-        borderTopColor: '#808080',
-        borderLeftColor: '#808080',
-        borderRightColor: '#FFFFFF',
-        borderBottomColor: '#FFFFFF',
-        background: '#C0C0C0',
-        padding: '2px',
+        display: 'flex',
+        justifyContent: isMobile ? 'stretch' : 'center',
+        width: '100%',
+        overflow: 'hidden',
       }}>
+        <div 
+          ref={gameBoardRef}
+          style={{
+            display: isMobile ? 'grid' : 'inline-grid',
+            gridTemplateColumns: isMobile 
+              ? (size === 'expert' ? `repeat(${cols}, minmax(0, 1fr))` : `repeat(${cols}, ${cellSize}px)`)
+              : `repeat(${cols}, ${cellSize}px)`,
+            gap: 0,
+            border: '2px solid',
+            borderTopColor: '#808080',
+            borderLeftColor: '#808080',
+            borderRightColor: '#FFFFFF',
+            borderBottomColor: '#FFFFFF',
+            background: '#C0C0C0',
+            padding: '2px',
+            transform: boardScale !== 1 && !isMobile ? `scale(${boardScale})` : 'none',
+            transformOrigin: 'top center',
+            width: isMobile ? (size === 'expert' ? '100%' : 'auto') : 'auto',
+            margin: isMobile && size !== 'expert' ? '0 auto' : '0',
+          }}>
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <div
@@ -409,8 +485,9 @@ export function MinesweeperGame({ onSizeChange }) {
                 handleCellClick(rowIndex, colIndex, true)
               }}
               style={{
-                width: '16px',
-                height: '16px',
+                width: isMobile ? '100%' : `${cellSize}px`,
+                height: isMobile ? 'auto' : `${cellSize}px`,
+                aspectRatio: '1',
                 background: getCellColor(cell),
                 border: '1px solid',
                 borderTopColor: cell.isRevealed ? '#808080' : '#FFFFFF',
@@ -420,7 +497,9 @@ export function MinesweeperGame({ onSizeChange }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px',
+                fontSize: isMobile 
+                  ? (size === 'beginner' ? 'clamp(10px, 2.8vw, 14px)' : size === 'intermediate' ? 'clamp(7px, 1.8vw, 9px)' : 'clamp(6px, 1.5vw, 8px)')
+                  : '12px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
                 color: getNumberColor(cell.adjacentMines),
@@ -453,7 +532,16 @@ export function MinesweeperGame({ onSizeChange }) {
             </div>
           ))
         )}
+        </div>
       </div>
+
+      {/* Тачпад для мобильных устройств */}
+      {isMobile && (
+        <Touchpad 
+          gameBoardRef={gameBoardRef}
+          enabled={true}
+        />
+      )}
 
       {/* Меню выбора сложности */}
       <div style={{

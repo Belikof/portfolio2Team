@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Windows2000Dialog } from './Windows2000Dialog'
 
 export function ContactFormWindow() {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
   const [formData, setFormData] = useState({
     name: '',
     contactType: '',
@@ -95,7 +96,6 @@ export function ContactFormWindow() {
     <div style={{ 
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
       background: '#ECE9D8',
       fontFamily: 'Tahoma, MS Sans Serif, sans-serif',
       fontSize: 'var(--font-size, 8pt)',
@@ -104,12 +104,12 @@ export function ContactFormWindow() {
       WebkitFontSmoothing: 'none',
       MozOsxFontSmoothing: 'grayscale',
       fontSmooth: 'never',
-      padding: '12px',
+      padding: isMobile ? '10px' : '12px',
     }}>
       <div style={{
         fontSize: '9pt',
         fontWeight: 'bold',
-        marginBottom: '12px',
+        marginBottom: isMobile ? '8px' : '12px',
         color: '#000000',
       }}>
         Заполните форму для связи с нами
@@ -117,7 +117,7 @@ export function ContactFormWindow() {
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
         {/* Имя */}
-        <div style={{ marginBottom: '10px' }}>
+        <div style={{ marginBottom: isMobile ? '8px' : '10px' }}>
           <label style={{ 
             display: 'block', 
             marginBottom: '4px',
@@ -164,7 +164,7 @@ export function ContactFormWindow() {
         </div>
 
         {/* Контакт для связи */}
-        <div style={{ marginBottom: '10px' }}>
+        <div style={{ marginBottom: isMobile ? '8px' : '10px' }}>
           <label style={{ 
             display: 'block', 
             marginBottom: '4px',
@@ -198,7 +198,7 @@ export function ContactFormWindow() {
                 outline: 'none',
                 boxSizing: 'border-box',
                 cursor: 'pointer',
-                minWidth: '120px',
+                minWidth: isMobile ? '160px' : '120px',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderTopColor = '#000080'
@@ -213,7 +213,7 @@ export function ContactFormWindow() {
                 e.currentTarget.style.borderBottomColor = '#FFFFFF'
               }}
             >
-              <option value="">Выберите способ связи</option>
+              <option value="">{isMobile ? 'Способ связи' : 'Выберите способ связи'}</option>
               <option value="telegram">Telegram</option>
               <option value="whatsapp">WhatsApp / Телефон</option>
               <option value="email">Email</option>
@@ -267,7 +267,7 @@ export function ContactFormWindow() {
           display: 'flex',
           gap: '8px',
           justifyContent: 'flex-end',
-          marginTop: '16px',
+          marginTop: isMobile ? '10px' : '16px',
         }}>
           <button
             type="button"

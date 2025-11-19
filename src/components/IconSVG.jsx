@@ -3,10 +3,13 @@ import { useState } from 'react'
 // Иконки в стиле Windows 2000 (заглушки, если пользовательские не загружены)
 export function IconSVG({ type, customIcon, iconSize = 32 }) {
   const [imgError, setImgError] = useState(false)
-  const scale = iconSize / 16
   
   // Если есть пользовательская иконка и она загрузилась, используем её
   if (customIcon && !imgError) {
+    // Увеличиваем масштаб только для иконки Winamp
+    const isWinamp = type === 'winamp' || customIcon.includes('winapp-icon')
+    const scale = isWinamp ? 1.5 : 1
+    
     return (
       <div style={{
         width: `${iconSize}px`,
@@ -14,23 +17,22 @@ export function IconSVG({ type, customIcon, iconSize = 32 }) {
         overflow: 'hidden',
         imageRendering: 'pixelated',
         WebkitImageRendering: 'pixelated',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
         <img 
           src={customIcon} 
           alt="" 
-          width="16" 
-          height="16"
           style={{ 
+            width: `${iconSize * scale}px`,
+            height: `${iconSize * scale}px`,
             imageRendering: 'pixelated',
             WebkitImageRendering: 'pixelated',
             MozImageRendering: 'crisp-edges',
             msInterpolationMode: 'nearest-neighbor',
             display: 'block',
-            filter: 'contrast(2) brightness(1.2) saturate(1.4)',
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-            width: '16px',
-            height: '16px',
+            objectFit: isWinamp ? 'cover' : 'contain',
           }}
           onError={() => setImgError(true)}
         />

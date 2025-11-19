@@ -11,5 +11,6 @@ export const iconPaths = {
   minesweeper: '/icons/minesweeper.svg',
   snake: '/icons/snake.svg',
   search: '/icons/search.svg',
+  winamp: '/winapp-icon.png',
 }
 
